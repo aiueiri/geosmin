@@ -38,6 +38,7 @@
   .btn-outline{background:#fff;color:var(--navy);border:1px solid var(--border);}
   .btn-danger{background:#fff;color:var(--danger);border:1px solid var(--danger);}
   .btn-sm{padding:5px 10px;font-size:12px;}
+  button:disabled{opacity:.5;cursor:not-allowed;}
 
   #appScreen{display:none;min-height:100vh;flex-direction:column;}
   header.topbar{background:var(--navy);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
@@ -78,21 +79,21 @@
   .alert-box{padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px;}
   .alert-ok{background:#eefaf3;color:var(--accent);border:1px solid #b8e0cd;}
   .alert-err{background:#fdecea;color:var(--danger);border:1px solid #f5c6c0;}
-  .balance-check{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 12px;border-radius:20px;}
-  .balance-ok{background:#eefaf3;color:var(--accent);}
-  .balance-err{background:#fdecea;color:var(--danger);}
-  .sub-row{display:flex;gap:14px;margin-bottom:8px;align-items:flex-end;flex-wrap:wrap;}
-  .sub-row label{flex:1;min-width:120px;font-size:12px;color:var(--muted);}
-  .sub-row label input,.sub-row label select{width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;}
-  .sub-remove{background:#fff;border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:8px 10px;height:38px;}
-  .year-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--accent-light);color:var(--accent);font-weight:700;margin-left:6px;}
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
-  .modal{background:#fff;border-radius:10px;padding:24px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2);}
-  .modal h3{margin:0 0 16px;font-size:16px;color:var(--navy);}
-  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
-  .amount-match{font-size:12px;padding:4px 10px;border-radius:12px;margin-top:4px;display:inline-block;}
-  .match-ok{background:#eefaf3;color:var(--accent);}
-  .match-err{background:#fdecea;color:var(--danger);}
+  .balance-check{display:inline-block;font-size:13px;padding:8px 14px;border-radius:20px;margin-bottom:14px;}
+  .balance-ok{background:#eefaf3;color:var(--accent);font-weight:700;}
+  .balance-err{background:#fdecea;color:var(--danger);font-weight:700;}
+  .line-row{display:flex;gap:10px;margin-bottom:8px;align-items:center;flex-wrap:wrap;}
+  .line-row .account-select{flex:2;min-width:200px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;}
+  .line-row .amount-input{flex:1;min-width:130px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;text-align:right;}
+  .line-remove{background:#fff;border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:8px 12px;}
+  .line-total{font-size:13px;color:var(--muted);text-align:right;padding:6px 0;}
+  .line-total strong{color:var(--navy);font-size:15px;}
+  .amount-match-msg{font-size:13px;padding:8px 12px;border-radius:6px;display:inline-block;margin-top:4px;}
+  .match-ok{background:#eefaf3;color:var(--accent);font-weight:700;}
+  .match-err{background:#fdecea;color:var(--danger);font-weight:700;}
+  .edit-badge{background:#fff3cd;color:#b8860b;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700;margin-left:8px;}
+  .action-group{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;}
+  .sub-lines{font-size:11px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -104,11 +105,10 @@
     <p class="sub">青色申告(複式簿記・65万円控除)対応</p>
     <label>メールアドレス</label>
     <input type="email" id="loginEmail" autocomplete="username">
-    <label>パスワード(6文字以上)</label>
+    <label>パスワード</label>
     <input type="password" id="loginPassword" autocomplete="current-password">
     <div class="login-actions">
       <button class="btn-primary" onclick="doLogin()">ログイン</button>
-      <button class="btn-outline" onclick="doSignup()">新規登録</button>
     </div>
     <div style="margin-top:14px;">
       <button class="link-btn" onclick="doResetPassword()">パスワードを忘れた場合</button>
@@ -152,18 +152,24 @@
         </div>
 
         <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">借方(左側)</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">借方(左側)</div>
+            <button class="btn-outline btn-sm" onclick="addDebitLine()">+ 行を追加</button>
+          </div>
           <div id="debitLines"></div>
-          <button class="btn-outline btn-sm" onclick="addDebitLine()">+ 借方行を追加</button>
+          <div class="line-total">借方合計: <strong id="debitTotal">0</strong> 円</div>
         </div>
 
         <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">貸方(右側)</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);">貸方(右側)</div>
+            <button class="btn-outline btn-sm" onclick="addCreditLine()">+ 行を追加</button>
+          </div>
           <div id="creditLines"></div>
-          <button class="btn-outline btn-sm" onclick="addCreditLine()">+ 貸方行を追加</button>
+          <div class="line-total">貸方合計: <strong id="creditTotal">0</strong> 円</div>
         </div>
 
-        <div id="amountMatchMsg" style="margin-bottom:12px;"></div>
+        <div id="amountMatchMsg" style="margin-bottom:14px;"></div>
 
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn-primary" id="entrySubmitBtn" onclick="submitEntry()">仕訳を登録</button>
@@ -256,7 +262,7 @@
     <div class="tab-panel" id="tab-years">
       <div class="card">
         <h3>会計年度一覧</h3>
-        <p class="hint">会計年度ごとに開始日・終了日を登録します。仕訳は必ずいずれかの会計年度に属します。</p>
+        <p class="hint">会計年度ごとに開始日・終了日を登録します。仕訳は必ずいずれかの会計年度に属します。仕訳が存在する年度は削除できません。</p>
         <div class="table-wrap"><table id="yearsTable"></table></div>
       </div>
       <div class="card">
@@ -275,25 +281,8 @@
     <div class="tab-panel" id="tab-accounts">
       <div class="card">
         <h3>勘定科目一覧</h3>
-        <p class="hint">科目名・区分は直接編集できます(変更後、自動保存されます)。仕訳は科目IDで紐付いているため、名称変更しても仕訳は壊れません。使用中の科目は削除できません。</p>
+        <p class="hint">科目名・区分は直接編集できます(変更後、自動保存)。仕訳は科目IDで紐付いているため、名称変更しても仕訳は壊れません。使用中の科目は削除できません。</p>
         <div class="table-wrap"><table id="accountsTable"></table></div>
-      </div>
-      <div class="card">
-        <h3>新しい科目を追加</h3>
-        <div class="form-row">
-          <label>科目名<input type="text" id="newAccountName"></label>
-          <label>区分
-            <select id="newAccountCategory">
-              <option value="asset">資産</option>
-              <option value="liability">負債</option>
-              <option value="equity">資本</option>
-              <option value="revenue">収益</option>
-              <option value="expense">費用</option>
-            </select>
-          </label>
-        </div>
-        <button class="btn-primary" onclick="addAccount()">科目を追加</button>
-        <p class="hint" style="margin-top:10px;">※同名の科目は登録できません。</p>
       </div>
     </div>
 
@@ -335,11 +324,12 @@ const DEFAULT_ACCOUNTS = [
 
 let currentUser = null;
 let accounts = [];      // {id,name,category}
-let entries = [];       // {id,date,fiscalYearId,debitLines:[{accountId,amount}],creditLines:[{accountId,amount}],description}
+let entries = [];       // {id,date,fiscalYearId,description,debitLines:[{accountId,amount}],creditLines:[{accountId,amount}]}
 let fiscalYears = [];   // {id,name,startDate,endDate}
 let unsubAccounts=null, unsubEntries=null, unsubYears=null;
 let pendingImportRows = [];
 let editingEntryId = null;
+let migrationChecked = false;
 
 /* ---------------- 認証 ---------------- */
 function doLogin(){
@@ -347,15 +337,8 @@ function doLogin(){
   const pass = document.getElementById('loginPassword').value;
   document.getElementById('loginError').textContent = "";
   auth.signInWithEmailAndPassword(email, pass).catch(e=>{
+    document.getElementById('loginError').style.color = "#c0392b";
     document.getElementById('loginError').textContent = "ログイン失敗: " + translateAuthError(e);
-  });
-}
-function doSignup(){
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  document.getElementById('loginError').textContent = "";
-  auth.createUserWithEmailAndPassword(email, pass).catch(e=>{
-    document.getElementById('loginError').textContent = "登録失敗: " + translateAuthError(e);
   });
 }
 function doResetPassword(){
@@ -389,6 +372,7 @@ auth.onAuthStateChanged(user=>{
     document.getElementById('appScreen').style.display = 'flex';
     document.getElementById('userEmailLabel').textContent = user.email;
     document.getElementById('entryDate').valueAsDate = new Date();
+    migrationChecked = false;
     startListeners();
   } else {
     currentUser = null;
@@ -401,25 +385,94 @@ auth.onAuthStateChanged(user=>{
   }
 });
 
-/* ---------------- Firestoreリスナー ---------------- */
+/* ---------------- Firestore ---------------- */
 function userDoc(){ return db.collection('users').doc(currentUser.uid); }
 
+/* 初回起動時のクリーンスタート処理 */
+async function migrateIfNeeded(){
+  if(migrationChecked) return;
+  migrationChecked = true;
+
+  const accSnap = await userDoc().collection('accounts').get();
+  if(accSnap.empty){
+    // 初回 → 標準科目を登録するだけ
+    const batch = db.batch();
+    DEFAULT_ACCOUNTS.forEach(([name,category])=>{
+      const ref = userDoc().collection('accounts').doc();
+      batch.set(ref, {name, category});
+    });
+    await batch.commit();
+    console.log('標準科目を作成しました');
+    return;
+  }
+
+  // 既存データあり → 旧形式か新形式かを判定
+  const isOldFormat = accSnap.docs.some(d=>{
+    const data = d.data();
+    return !data.name || !data.category;
+  });
+
+  // 科目名の重複チェック
+  const nameCount = {};
+  accSnap.docs.forEach(d=>{
+    const n = d.data().name;
+    nameCount[n] = (nameCount[n]||0) + 1;
+  });
+  const hasDuplicates = Object.values(nameCount).some(c=>c>1);
+
+  const entSnap = await userDoc().collection('entries').get();
+  const hasOldEntries = entSnap.docs.some(d=>{
+    const data = d.data();
+    return data.debitAccount || data.creditAccount;
+  });
+
+  if(!hasDuplicates && !hasOldEntries && !isOldFormat){
+    // 既に新形式
+    return;
+  }
+
+  const ok = confirm(
+    "既存データに旧形式または重複があります。\n\n" +
+    "すべての科目・仕訳・会計年度を削除して、クリーンスタートします。\n" +
+    "(標準科目は自動で再登録されます)\n\n" +
+    "実行してよろしいですか？\n" +
+    "※この操作は取り消せません。"
+  );
+  if(!ok){
+    alert('移行をキャンセルしました。旧データはそのまま残ります。');
+    return;
+  }
+
+  // 全削除
+  await deleteCollection('accounts');
+  await deleteCollection('entries');
+  await deleteCollection('fiscalYears');
+
+  // 標準科目を再登録
+  const batch = db.batch();
+  DEFAULT_ACCOUNTS.forEach(([name,category])=>{
+    const ref = userDoc().collection('accounts').doc();
+    batch.set(ref, {name, category});
+  });
+  await batch.commit();
+  alert('クリーンスタートが完了しました。標準科目を登録しました。');
+}
+
+async function deleteCollection(name){
+  const snap = await userDoc().collection(name).get();
+  const docs = snap.docs;
+  // 500件ずつバッチ削除
+  for(let i=0; i<docs.length; i+=450){
+    const batch = db.batch();
+    docs.slice(i, i+450).forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+  }
+}
+
 function startListeners(){
-  // 初期科目セット(重複防止付き)
-  userDoc().collection('accounts').get().then(snap=>{
-    if(snap.empty){
-      const batch = db.batch();
-      DEFAULT_ACCOUNTS.forEach(([name,category])=>{
-        const ref = userDoc().collection('accounts').doc();
-        batch.set(ref, {name, category});
-      });
-      batch.commit().then(()=>{
-        alert('標準科目を作成しました！');
-      }).catch(e=>{
-        console.error(e);
-        alert('標準科目の作成に失敗: ' + e.message);
-      });
-    }
+  migrateIfNeeded().catch(e=>{
+    console.error(e);
+    alert('初期化エラー: ' + e.message);
   });
 
   unsubAccounts = userDoc().collection('accounts').orderBy('category').orderBy('name')
@@ -427,7 +480,7 @@ function startListeners(){
       accounts = snap.docs.map(d=>({id:d.id, ...d.data()}));
       renderAccountSelects();
       renderAccountsTable();
-      renderAllDebitCreditLines();
+      renderAllLines();
       renderTrialBalance();
       renderPL();
       renderLedger();
@@ -452,15 +505,16 @@ function startListeners(){
       renderLedger();
       renderTrialBalance();
       renderPL();
+      renderAccountsTable();
     });
 }
 
 /* ---------------- 会計年度 ---------------- */
 function renderYearsTable(){
-  const sorted = [...fiscalYears].sort((a,b)=> a.startDate.localeCompare(b.startDate));
+  const sorted = [...fiscalYears].sort((a,b)=> a.name.localeCompare(b.name));
   let html = '<tr><th class="left">年度名</th><th class="left">開始日</th><th class="left">終了日</th><th>仕訳件数</th><th>操作</th></tr>';
   if(sorted.length===0){
-    html += '<tr><td colspan="5" class="empty-msg">会計年度が登録されていません</td></tr>';
+    html += '<tr><td colspan="5" class="empty-msg">会計年度が登録されていません。上のフォームから追加してください。</td></tr>';
   }
   sorted.forEach(y=>{
     const count = entries.filter(e=>e.fiscalYearId===y.id).length;
@@ -469,7 +523,7 @@ function renderYearsTable(){
       <td class="left"><input type="date" value="${y.startDate||''}" onchange="updateFiscalYear('${y.id}','startDate',this.value)" style="padding:5px;border:1px solid var(--border);border-radius:4px;"></td>
       <td class="left"><input type="date" value="${y.endDate||''}" onchange="updateFiscalYear('${y.id}','endDate',this.value)" style="padding:5px;border:1px solid var(--border);border-radius:4px;"></td>
       <td>${count}件</td>
-      <td><button class="btn-danger btn-sm" onclick="deleteFiscalYear('${y.id}','${escapeHtml(y.name)}')">削除</button></td>
+      <td>${count>0 ? '<span class="hint">削除不可</span>' : `<button class="btn-danger btn-sm" onclick="deleteFiscalYear('${y.id}','${escapeHtml(y.name)}')">削除</button>`}</td>
     </tr>`;
   });
   document.getElementById('yearsTable').innerHTML = html;
@@ -480,6 +534,7 @@ function addFiscalYear(){
   const endDate = document.getElementById('newYearEnd').value;
   if(!name || !startDate || !endDate){ alert('年度名・開始日・終了日は必須です'); return; }
   if(fiscalYears.some(y=>y.name===name)){ alert('同じ年度名が既に存在します'); return; }
+  if(startDate > endDate){ alert('開始日は終了日より前にしてください'); return; }
   userDoc().collection('fiscalYears').add({name, startDate, endDate}).then(()=>{
     document.getElementById('newYearName').value = '';
     document.getElementById('newYearStart').value = '';
@@ -496,26 +551,28 @@ function updateFiscalYear(id, field, value){
 function deleteFiscalYear(id, name){
   const count = entries.filter(e=>e.fiscalYearId===id).length;
   if(count>0){
-    alert(`「${name}」には${count}件の仕訳が存在するため削除できません。先に仕訳を移動または削除してください。`);
+    alert(`「${name}」には${count}件の仕訳が存在するため削除できません。`);
     return;
   }
   if(!confirm(`会計年度「${name}」を削除しますか?`)) return;
   userDoc().collection('fiscalYears').doc(id).delete();
 }
 
-/* ---------------- 科目設定 ---------------- */
+/* ---------------- 科目 ---------------- */
 function renderAccountSelects(){
   const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
-  const opts = sorted.map(a=>`<option value="${a.id}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
+  const optsHtml = sorted.map(a=>`<option value="${a.id}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
+
   document.querySelectorAll('.account-select').forEach(sel=>{
     const prev = sel.value;
-    sel.innerHTML = opts;
+    sel.innerHTML = optsHtml;
     if([...sel.options].some(o=>o.value===prev)) sel.value = prev;
   });
+
   const ledgerSel = document.getElementById('ledgerAccountSelect');
   if(ledgerSel){
     const prevLedger = ledgerSel.value;
-    ledgerSel.innerHTML = sorted.map(a=>`<option value="${a.id}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
+    ledgerSel.innerHTML = optsHtml;
     if([...ledgerSel.options].some(o=>o.value===prevLedger)) ledgerSel.value = prevLedger;
   }
 }
@@ -523,6 +580,9 @@ function renderAccountSelects(){
 function renderAccountsTable(){
   const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
   let html = '<tr><th class="left">科目名</th><th class="left">区分</th><th>使用状況</th><th>操作</th></tr>';
+  if(sorted.length===0){
+    html += '<tr><td colspan="4" class="empty-msg">科目がありません</td></tr>';
+  }
   sorted.forEach(a=>{
     const used = isAccountUsed(a.id);
     html += `<tr>
@@ -546,4 +606,575 @@ function isAccountUsed(accountId){
   );
 }
 
-function addAccount(){
+function updateAccount(id, field, value){
+  if(field==='name'){
+    const v = value.trim();
+    if(!v){ alert('科目名は空にできません'); renderAccountsTable(); return; }
+    const dup = accounts.find(a=>a.id!==id && a.name===v);
+    if(dup){ alert('同じ名前の科目が既に存在します'); renderAccountsTable(); return; }
+    userDoc().collection('accounts').doc(id).update({name:v});
+  } else {
+    userDoc().collection('accounts').doc(id).update({[field]: value});
+  }
+}
+function deleteAccount(id, name){
+  if(isAccountUsed(id)){
+    alert(`「${name}」は仕訳で使用されているため削除できません。`);
+    return;
+  }
+  if(!confirm(`科目「${name}」を削除しますか?`)) return;
+  userDoc().collection('accounts').doc(id).delete();
+}
+
+/* ---------------- 仕訳入力(複式・複数行) ---------------- */
+let debitLineSeq = 0, creditLineSeq = 0;
+
+function makeLineHtml(side, seq){
+  return `<div class="line-row" data-side="${side}" data-seq="${seq}">
+    <select class="account-select" onchange="recalcTotals()"></select>
+    <input type="number" class="amount-input" min="0" placeholder="金額" oninput="recalcTotals()">
+    <button class="line-remove" onclick="removeLine('${side}', ${seq})" title="行を削除">×</button>
+  </div>`;
+}
+
+function addDebitLine(accountId, amount){
+  const seq = ++debitLineSeq;
+  const wrap = document.getElementById('debitLines');
+  wrap.insertAdjacentHTML('beforeend', makeLineHtml('debit', seq));
+  const row = wrap.querySelector(`.line-row[data-seq="${seq}"]`);
+  renderAccountSelects();
+  if(accountId) row.querySelector('.account-select').value = accountId;
+  if(amount!=null) row.querySelector('.amount-input').value = amount;
+  recalcTotals();
+}
+function addCreditLine(accountId, amount){
+  const seq = ++creditLineSeq;
+  const wrap = document.getElementById('creditLines');
+  wrap.insertAdjacentHTML('beforeend', makeLineHtml('credit', seq));
+  const row = wrap.querySelector(`.line-row[data-seq="${seq}"]`);
+  renderAccountSelects();
+  if(accountId) row.querySelector('.account-select').value = accountId;
+  if(amount!=null) row.querySelector('.amount-input').value = amount;
+  recalcTotals();
+}
+function removeLine(side, seq){
+  const wrap = side==='debit' ? document.getElementById('debitLines') : document.getElementById('creditLines');
+  const row = wrap.querySelector(`.line-row[data-seq="${seq}"]`);
+  if(!row) return;
+  const totalRows = wrap.querySelectorAll('.line-row').length;
+  if(totalRows <= 1){ alert('最低1行は必要です'); return; }
+  row.remove();
+  recalcTotals();
+}
+
+function renderAllLines(){
+  // 既存の行のselectだけ再構築(入力値は保持)
+  document.querySelectorAll('#debitLines .account-select, #creditLines .account-select').forEach(sel=>{
+    const prev = sel.value;
+    const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
+    sel.innerHTML = sorted.map(a=>`<option value="${a.id}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
+    if([...sel.options].some(o=>o.value===prev)) sel.value = prev;
+  });
+}
+
+function getLines(side){
+  const wrap = side==='debit' ? document.getElementById('debitLines') : document.getElementById('creditLines');
+  const rows = [...wrap.querySelectorAll('.line-row')];
+  return rows.map(r=>({
+    accountId: r.querySelector('.account-select').value,
+    amount: Number(r.querySelector('.amount-input').value) || 0
+  })).filter(l=> l.accountId && l.amount > 0);
+}
+
+function recalcTotals(){
+  const dTotal = getLines('debit').reduce((s,l)=>s+l.amount,0);
+  const cTotal = getLines('credit').reduce((s,l)=>s+l.amount,0);
+  document.getElementById('debitTotal').textContent = fmt(dTotal);
+  document.getElementById('creditTotal').textContent = fmt(cTotal);
+
+  const msgEl = document.getElementById('amountMatchMsg');
+  if(dTotal===0 && cTotal===0){
+    msgEl.innerHTML = '';
+  } else if(dTotal === cTotal && dTotal > 0){
+    msgEl.innerHTML = `<span class="amount-match-msg match-ok">✓ 貸借一致 (${fmt(dTotal)} 円)</span>`;
+  } else {
+    msgEl.innerHTML = `<span class="amount-match-msg match-err">✗ 貸借不一致 (差額: ${fmt(Math.abs(dTotal-cTotal))} 円)</span>`;
+  }
+}
+
+function submitEntry(){
+  const date = document.getElementById('entryDate').value;
+  const desc = document.getElementById('entryDesc').value.trim();
+  const fiscalYearId = document.getElementById('entryFiscalYear').value;
+  const debitLines = getLines('debit');
+  const creditLines = getLines('credit');
+
+  if(!date){ alert('日付を入力してください'); return; }
+  if(!fiscalYearId){ alert('会計年度を選択してください'); return; }
+  if(debitLines.length===0 || creditLines.length===0){ alert('借方・貸方それぞれ1行以上入力してください'); return; }
+
+  const dTotal = debitLines.reduce((s,l)=>s+l.amount,0);
+  const cTotal = creditLines.reduce((s,l)=>s+l.amount,0);
+  if(dTotal !== cTotal){ alert(`貸借が一致していません(借方 ${fmt(dTotal)} / 貸方 ${fmt(cTotal)})`); return; }
+
+  // 日付が年度範囲内かチェック
+  const fy = fiscalYears.find(y=>y.id===fiscalYearId);
+  if(fy && (date < fy.startDate || date > fy.endDate)){
+    if(!confirm(`日付(${date})は会計年度「${fy.name}」の期間(${fy.startDate}〜${fy.endDate})外です。登録しますか?`)) return;
+  }
+
+  const data = {date, description:desc, fiscalYearId, debitLines, creditLines};
+
+  if(editingEntryId){
+    userDoc().collection('entries').doc(editingEntryId).update(data).then(()=>{
+      cancelEdit();
+      alert('仕訳を更新しました');
+    });
+  } else {
+    userDoc().collection('entries').add(data).then(()=>{
+      // 日付と摘要以外をリセット
+      document.getElementById('entryDesc').value = '';
+      document.getElementById('debitLines').innerHTML = '';
+      document.getElementById('creditLines').innerHTML = '';
+      addDebitLine();
+      addCreditLine();
+      recalcTotals();
+    });
+  }
+}
+
+function cancelEdit(){
+  editingEntryId = null;
+  document.getElementById('entryFormTitle').textContent = '仕訳を入力';
+  document.getElementById('entrySubmitBtn').textContent = '仕訳を登録';
+  document.getElementById('entryCancelBtn').classList.add('hidden');
+  document.getElementById('entryDesc').value = '';
+  document.getElementById('debitLines').innerHTML = '';
+  document.getElementById('creditLines').innerHTML = '';
+  document.getElementById('entryDate').valueAsDate = new Date();
+  addDebitLine();
+  addCreditLine();
+  recalcTotals();
+}
+
+function editEntry(id){
+  const e = entries.find(x=>x.id===id);
+  if(!e) return;
+  editingEntryId = id;
+  document.getElementById('entryFormTitle').innerHTML = '仕訳を編集 <span class="edit-badge">編集中</span>';
+  document.getElementById('entrySubmitBtn').textContent = '変更を保存';
+  document.getElementById('entryCancelBtn').classList.remove('hidden');
+  document.getElementById('entryDate').value = e.date;
+  document.getElementById('entryDesc').value = e.description || '';
+  if(e.fiscalYearId) document.getElementById('entryFiscalYear').value = e.fiscalYearId;
+
+  document.getElementById('debitLines').innerHTML = '';
+  document.getElementById('creditLines').innerHTML = '';
+  debitLineSeq = 0; creditLineSeq = 0;
+  (e.debitLines||[]).forEach(l=> addDebitLine(l.accountId, l.amount));
+  (e.creditLines||[]).forEach(l=> addCreditLine(l.accountId, l.amount));
+  if((e.debitLines||[]).length===0) addDebitLine();
+  if((e.creditLines||[]).length===0) addCreditLine();
+  recalcTotals();
+
+  switchTab('tab-entry');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function duplicateEntry(id){
+  const e = entries.find(x=>x.id===id);
+  if(!e) return;
+  editingEntryId = null;
+  document.getElementById('entryFormTitle').textContent = '仕訳を入力(複製)';
+  document.getElementById('entrySubmitBtn').textContent = '仕訳を登録';
+  document.getElementById('entryCancelBtn').classList.add('hidden');
+  document.getElementById('entryDate').value = e.date;
+  document.getElementById('entryDesc').value = e.description || '';
+  if(e.fiscalYearId) document.getElementById('entryFiscalYear').value = e.fiscalYearId;
+
+  document.getElementById('debitLines').innerHTML = '';
+  document.getElementById('creditLines').innerHTML = '';
+  debitLineSeq = 0; creditLineSeq = 0;
+  (e.debitLines||[]).forEach(l=> addDebitLine(l.accountId, l.amount));
+  (e.creditLines||[]).forEach(l=> addCreditLine(l.accountId, l.amount));
+  recalcTotals();
+
+  switchTab('tab-entry');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function deleteEntry(id){
+  if(!confirm('この仕訳を削除しますか?')) return;
+  userDoc().collection('entries').doc(id).delete();
+}
+
+/* ---------------- Excel貼り付け取り込み ---------------- */
+function parseDateFlexible(str){
+  str = (str||'').trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  let m = str.match(/^(\d{4})[\/年](\d{1,2})[\/月](\d{1,2})日?$/);
+  if(m){ return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`; }
+  const d = new Date(str);
+  if(!isNaN(d.getTime())){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return null;
+}
+
+function previewPaste(){
+  const raw = document.getElementById('pasteArea').value;
+  const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+  const accountByName = {};
+  accounts.forEach(a=> accountByName[a.name] = a);
+  const fiscalYearId = document.getElementById('importFiscalYear').value;
+
+  pendingImportRows = [];
+  let html = '<div class="table-wrap"><table><tr><th class="left">日付</th><th class="left">借方科目</th><th>借方金額</th><th class="left">貸方科目</th><th>貸方金額</th><th class="left">摘要</th><th>状態</th></tr>';
+
+  lines.forEach(line=>{
+    const cols = line.includes('\t') ? line.split('\t') : line.split(',');
+    const [dateRaw, debitAcc, debitAmt, creditAcc, creditAmt, desc] = cols.map(c=>(c||'').trim());
+    const date = parseDateFlexible(dateRaw);
+    const dAcc = accountByName[debitAcc];
+    const cAcc = accountByName[creditAcc];
+    const dAmt = Number(debitAmt);
+    const cAmt = Number(creditAmt);
+
+    const errors = [];
+    if(!date) errors.push('日付不正');
+    if(!dAcc) errors.push('借方科目未登録');
+    if(!cAcc) errors.push('貸方科目未登録');
+    if(!dAmt) errors.push('借方金額不正');
+    if(!cAmt) errors.push('貸方金額不正');
+    if(dAmt && cAmt && dAmt !== cAmt) errors.push('貸借不一致');
+
+    const ok = errors.length===0;
+    if(ok){
+      pendingImportRows.push({
+        date, description:desc||'', fiscalYearId,
+        debitLines:  [{accountId:dAcc.id, amount:dAmt}],
+        creditLines: [{accountId:cAcc.id, amount:cAmt}]
+      });
+    }
+    html += `<tr class="${ok?'row-ok':'row-error'}">
+      <td class="left">${escapeHtml(dateRaw)}</td>
+      <td class="left">${escapeHtml(debitAcc)}</td>
+      <td>${escapeHtml(debitAmt)}</td>
+      <td class="left">${escapeHtml(creditAcc)}</td>
+      <td>${escapeHtml(creditAmt)}</td>
+      <td class="left">${escapeHtml(desc||'')}</td>
+      <td class="${ok?'status-ok':'status-err'}">${ok?'OK':errors.join('・')}</td>
+    </tr>`;
+  });
+  html += '</table></div>';
+
+  if(lines.length===0){
+    html = '<p class="empty-msg">貼り付け欄が空です</p>';
+  } else {
+    html += `<div style="margin-top:12px;">
+      <button class="btn-primary" onclick="confirmPasteImport()">OKの行(${pendingImportRows.length}件)を登録する</button>
+    </div>`;
+  }
+  document.getElementById('pastePreviewArea').innerHTML = html;
+}
+
+function confirmPasteImport(){
+  if(pendingImportRows.length===0){ alert('登録できる行がありません'); return; }
+  const batch = db.batch();
+  pendingImportRows.forEach(row=>{
+    const ref = userDoc().collection('entries').doc();
+    batch.set(ref, row);
+  });
+  batch.commit().then(()=>{
+    alert(`${pendingImportRows.length}件の仕訳を登録しました`);
+    document.getElementById('pasteArea').value = '';
+    document.getElementById('pastePreviewArea').innerHTML = '';
+    pendingImportRows = [];
+  });
+}
+
+/* ---------------- Excel出力 ---------------- */
+function buildExportText(){
+  const yearSel = document.getElementById('exportYearSelect');
+  const fyId = yearSel.value;
+  const rows = entries.filter(e=> fyId==='all' || e.fiscalYearId===fyId);
+  let text = '';
+  rows.forEach(e=>{
+    const debit = (e.debitLines||[]).map(l=>`${accountName(l.accountId)}:${l.amount}`).join(' / ');
+    const credit = (e.creditLines||[]).map(l=>`${accountName(l.accountId)}:${l.amount}`).join(' / ');
+    text += `${e.date}\t${debit}\t\t${credit}\t\t${e.description||''}\n`;
+  });
+  document.getElementById('exportArea').value = text;
+}
+function downloadCSV(){
+  const yearSel = document.getElementById('exportYearSelect');
+  const fyId = yearSel.value;
+  const rows = entries.filter(e=> fyId==='all' || e.fiscalYearId===fyId);
+  let lines = ['"日付","借方科目","借方金額","貸方科目","貸方金額","摘要"'];
+  rows.forEach(e=>{
+    (e.debitLines||[]).forEach((dl, i)=>{
+      const cl = (e.creditLines||[])[i] || {accountId:'', amount:''};
+      lines.push([e.date, accountName(dl.accountId), dl.amount, accountName(cl.accountId), cl.amount, e.description||'']
+        .map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+    });
+  });
+  const blob = new Blob(["\uFEFF"+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '仕訳データ.csv';
+  a.click();
+}
+
+/* ---------------- 年度セレクト ---------------- */
+function populateYearSelects(){
+  const sorted = [...fiscalYears].sort((a,b)=> a.name.localeCompare(b.name));
+
+  // 全年度リスト(新規入力用)
+  const entrySel = document.getElementById('entryFiscalYear');
+  const importSel = document.getElementById('importFiscalYear');
+  [entrySel, importSel].forEach(sel=>{
+    const prev = sel.value;
+    sel.innerHTML = sorted.map(y=>`<option value="${y.id}">${escapeHtml(y.name)} (${y.startDate}〜${y.endDate})</option>`).join('');
+    if([...sel.options].some(o=>o.value===prev)) sel.value = prev;
+  });
+
+  // フィルタ用(全期間あり)
+  ['journalYearSelect','ledgerYearSelect','trialYearSelect','exportYearSelect'].forEach(id=>{
+    const el = document.getElementById(id);
+    const prev = el.value;
+    el.innerHTML = '<option value="all">全期間</option>' +
+      sorted.map(y=>`<option value="${y.id}">${escapeHtml(y.name)}</option>`).join('');
+    if([...el.options].some(o=>o.value===prev)) el.value = prev;
+  });
+
+  // 損益計算書(年度指定必須)
+  const plSel = document.getElementById('plYearSelect');
+  if(plSel){
+    const prev = plSel.value;
+    plSel.innerHTML = sorted.map(y=>`<option value="${y.id}">${escapeHtml(y.name)}</option>`).join('');
+    if([...plSel.options].some(o=>o.value===prev)) plSel.value = prev;
+    else if(sorted.length>0) plSel.value = sorted[sorted.length-1].id;
+  }
+
+  // デフォルト年度: 今日を含む年度 or 最新年度
+  if(!entrySel.value && sorted.length>0){
+    const today = new Date().toISOString().slice(0,10);
+    const cur = sorted.find(y=> y.startDate <= today && today <= y.endDate);
+    const chosen = cur || sorted[sorted.length-1];
+    entrySel.value = chosen.id;
+    importSel.value = chosen.id;
+  }
+}
+
+function onEntryYearChange(){
+  // 年度が変わったら日付のデフォルトを年度開始日に
+  const fyId = document.getElementById('entryFiscalYear').value;
+  const fy = fiscalYears.find(y=>y.id===fyId);
+  if(fy){
+    const today = new Date().toISOString().slice(0,10);
+    if(today >= fy.startDate && today <= fy.endDate){
+      document.getElementById('entryDate').value = today;
+    } else {
+      document.getElementById('entryDate').value = fy.startDate;
+    }
+  }
+}
+
+/* ---------------- 仕訳帳 ---------------- */
+function renderJournal(){
+  const yearSel = document.getElementById('journalYearSelect');
+  if(!yearSel) return;
+  const fyId = yearSel.value || 'all';
+  const rows = entries.filter(e=> fyId==='all' || e.fiscalYearId===fyId)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  let html = '<tr><th class="left">日付</th><th class="left">摘要</th><th class="left">借方</th><th>借方金額</th><th class="left">貸方</th><th>貸方金額</th><th>操作</th></tr>';
+  if(rows.length===0){
+    html += '<tr><td colspan="7" class="empty-msg">該当する仕訳がありません</td></tr>';
+  }
+  rows.forEach(e=>{
+    const debitStr = (e.debitLines||[]).map(l=>escapeHtml(accountName(l.accountId))).join('<br>');
+    const creditStr = (e.creditLines||[]).map(l=>escapeHtml(accountName(l.accountId))).join('<br>');
+    const debitAmtStr = (e.debitLines||[]).map(l=>fmt(l.amount)).join('<br>');
+    const creditAmtStr = (e.creditLines||[]).map(l=>fmt(l.amount)).join('<br>');
+    html += `<tr>
+      <td class="left">${e.date}</td>
+      <td class="left">${escapeHtml(e.description||'')}</td>
+      <td class="left sub-lines">${debitStr}</td>
+      <td>${debitAmtStr}</td>
+      <td class="left sub-lines">${creditStr}</td>
+      <td>${creditAmtStr}</td>
+      <td>
+        <div class="action-group">
+          <button class="btn-outline btn-sm" onclick="editEntry('${e.id}')">編集</button>
+          <button class="btn-outline btn-sm" onclick="duplicateEntry('${e.id}')">複製</button>
+          <button class="btn-danger btn-sm" onclick="deleteEntry('${e.id}')">削除</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('journalTable').innerHTML = html;
+}
+
+/* ---------------- 総勘定元帳 ---------------- */
+function renderLedger(){
+  const accSel = document.getElementById('ledgerAccountSelect');
+  const yearSel = document.getElementById('ledgerYearSelect');
+  if(!accSel || !yearSel) return;
+  const accId = accSel.value;
+  const fyId = yearSel.value || 'all';
+  if(!accId){ document.getElementById('ledgerTable').innerHTML = '<tr><td class="empty-msg">科目を選択してください</td></tr>'; return; }
+  const acc = accounts.find(a=>a.id===accId);
+  if(!acc){ document.getElementById('ledgerTable').innerHTML = '<tr><td class="empty-msg">科目が不明です</td></tr>'; return; }
+  const isDebitNormal = (acc.category==='asset' || acc.category==='expense');
+
+  const filtered = entries
+    .filter(e=> fyId==='all' || e.fiscalYearId===fyId)
+    .filter(e=>
+      (e.debitLines||[]).some(l=>l.accountId===accId) ||
+      (e.creditLines||[]).some(l=>l.accountId===accId)
+    )
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  let balance = 0;
+  let html = '<tr><th class="left">日付</th><th class="left">摘要</th><th class="left">相手科目</th><th>借方</th><th>貸方</th><th>残高</th></tr>';
+  if(filtered.length===0){
+    html += '<tr><td colspan="6" class="empty-msg">該当する記帳がありません</td></tr>';
+  }
+  filtered.forEach(e=>{
+    const dLines = (e.debitLines||[]).filter(l=>l.accountId===accId);
+    const cLines = (e.creditLines||[]).filter(l=>l.accountId===accId);
+    const debitVal = dLines.reduce((s,l)=>s+l.amount,0);
+    const creditVal = cLines.reduce((s,l)=>s+l.amount,0);
+    balance += isDebitNormal ? (debitVal - creditVal) : (creditVal - debitVal);
+
+    const counter = dLines.length>0
+      ? (e.creditLines||[]).map(l=>accountName(l.accountId)).join(' / ')
+      : (e.debitLines||[]).map(l=>accountName(l.accountId)).join(' / ');
+
+    html += `<tr>
+      <td class="left">${e.date}</td>
+      <td class="left">${escapeHtml(e.description||'')}</td>
+      <td class="left">${escapeHtml(counter)}</td>
+      <td>${debitVal?fmt(debitVal):''}</td>
+      <td>${creditVal?fmt(creditVal):''}</td>
+      <td>${fmt(balance)}</td>
+    </tr>`;
+  });
+  document.getElementById('ledgerTable').innerHTML = html;
+}
+
+/* ---------------- 試算表 ---------------- */
+function renderTrialBalance(){
+  const yearSel = document.getElementById('trialYearSelect');
+  if(!yearSel) return;
+  const fyId = yearSel.value || 'all';
+  const filtered = entries.filter(e=> fyId==='all' || e.fiscalYearId===fyId);
+
+  const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
+  let html = '<tr><th class="left">科目</th><th class="left">区分</th><th>借方合計</th><th>貸方合計</th><th>借方残高</th><th>貸方残高</th></tr>';
+  let sumDebitTotal=0, sumCreditTotal=0, sumDebitBal=0, sumCreditBal=0;
+
+  sorted.forEach(a=>{
+    const debitTotal = filtered.reduce((s,e)=> s + (e.debitLines||[]).filter(l=>l.accountId===a.id).reduce((x,l)=>x+l.amount,0), 0);
+    const creditTotal = filtered.reduce((s,e)=> s + (e.creditLines||[]).filter(l=>l.accountId===a.id).reduce((x,l)=>x+l.amount,0), 0);
+    if(debitTotal===0 && creditTotal===0) return;
+    const isDebitNormal = (a.category==='asset' || a.category==='expense');
+    const net = debitTotal - creditTotal;
+    const debitBal = isDebitNormal ? Math.max(net,0) : Math.max(-net,0);
+    const creditBal = isDebitNormal ? Math.max(-net,0) : Math.max(net,0);
+    sumDebitTotal+=debitTotal; sumCreditTotal+=creditTotal; sumDebitBal+=debitBal; sumCreditBal+=creditBal;
+    html += `<tr>
+      <td class="left">${escapeHtml(a.name)}</td>
+      <td class="left"><span class="cat-badge">${categoryLabels[a.category]}</span></td>
+      <td>${debitTotal?fmt(debitTotal):''}</td>
+      <td>${creditTotal?fmt(creditTotal):''}</td>
+      <td>${debitBal?fmt(debitBal):''}</td>
+      <td>${creditBal?fmt(creditBal):''}</td>
+    </tr>`;
+  });
+  html += `<tr class="total-row"><td class="left" colspan="2">合計</td><td>${fmt(sumDebitTotal)}</td><td>${fmt(sumCreditTotal)}</td><td>${fmt(sumDebitBal)}</td><td>${fmt(sumCreditBal)}</td></tr>`;
+  document.getElementById('trialTable').innerHTML = html;
+
+  // 貸借一致チェック
+  const checkEl = document.getElementById('trialBalanceCheck');
+  const totalOk = (sumDebitTotal === sumCreditTotal);
+  const balOk = (sumDebitBal === sumCreditBal);
+  if(totalOk && balOk){
+    checkEl.innerHTML = `<div class="balance-check balance-ok">✓ 貸借一致 (合計 ${fmt(sumDebitTotal)} 円 / 残高 ${fmt(sumDebitBal)} 円)</div>`;
+  } else {
+    let msg = '✗ 貸借不一致 ';
+    if(!totalOk) msg += `[合計 差額 ${fmt(Math.abs(sumDebitTotal-sumCreditTotal))}円] `;
+    if(!balOk) msg += `[残高 差額 ${fmt(Math.abs(sumDebitBal-sumCreditBal))}円]`;
+    checkEl.innerHTML = `<div class="balance-check balance-err">${msg}</div>`;
+  }
+}
+
+/* ---------------- 損益計算書 ---------------- */
+function renderPL(){
+  const yearSel = document.getElementById('plYearSelect');
+  if(!yearSel) return;
+  const fyId = yearSel.value;
+  if(!fyId){ document.getElementById('plTable').innerHTML = '<tr><td class="empty-msg">会計年度を選択してください</td></tr>'; return; }
+  const filtered = entries.filter(e=> e.fiscalYearId===fyId);
+
+  const revenueAccs = accounts.filter(a=>a.category==='revenue').sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+  const expenseAccs = accounts.filter(a=>a.category==='expense').sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+
+  let html = '<tr><th class="left">科目</th><th>金額</th></tr>';
+  let revenueTotal = 0;
+  html += '<tr class="pl-section-header"><td colspan="2" class="left">収益の部</td></tr>';
+  revenueAccs.forEach(a=>{
+    const credit = filtered.reduce((s,e)=> s + (e.creditLines||[]).filter(l=>l.accountId===a.id).reduce((x,l)=>x+l.amount,0), 0);
+    const debit  = filtered.reduce((s,e)=> s + (e.debitLines||[]).filter(l=>l.accountId===a.id).reduce((x,l)=>x+l.amount,0), 0);
+    const val = credit - debit;
+    if(val===0) return;
+    revenueTotal += val;
+    html += `<tr><td class="left">${escapeHtml(a.name)}</td><td>${fmt(val)}</td></tr>`;
+  });
+  html += `<tr class="total-row"><td class="left">収益合計</td><td>${fmt(revenueTotal)}</td></tr>`;
+
+  let expenseTotal = 0;
+  html += '<tr class="pl-section-header"><td colspan="2" class="left">費用の部</td></tr>';
+  expenseAccs.forEach(a=>{
+    const debit  = filtered.reduce((s,e)=> s + (e.debitLines||[]).filter(l=>l.accountId===a.id).reduce((x,l)=>x+l.amount,0), 0);
+    const credit = filtered.reduce((s,e)=> s + (e.creditLines||[]).filter(l=>l.accountId===a.id).reduce((x,l)=>x+l.amount,0), 0);
+    const val = debit - credit;
+    if(val===0) return;
+    expenseTotal += val;
+    html += `<tr><td class="left">${escapeHtml(a.name)}</td><td>${fmt(val)}</td></tr>`;
+  });
+  html += `<tr class="total-row"><td class="left">費用合計</td><td>${fmt(expenseTotal)}</td></tr>`;
+  html += `<tr class="pl-final"><td class="left">当期純利益(収益-費用)</td><td>${fmt(revenueTotal-expenseTotal)}</td></tr>`;
+
+  document.getElementById('plTable').innerHTML = html;
+}
+
+/* ---------------- タブ切り替え ---------------- */
+function switchTab(tabId){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+}
+
+/* ---------------- ユーティリティ ---------------- */
+function fmt(n){ return Number(n||0).toLocaleString('ja-JP'); }
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function accountName(id){
+  const a = accounts.find(x=>x.id===id);
+  return a ? a.name : '(削除済み)';
+}
+
+/* 初期行を追加 */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // ログイン後、リスナー開始時にrenderAllLinesが走るので
+  // 行の初期追加はここでやっておく
+  addDebitLine();
+  addCreditLine();
+});
+</script>
+</body>
+</html>
