@@ -387,7 +387,23 @@ function seedDefaults(){
     const ref = userDoc().collection('accounts').doc();
     batch.set(ref, {name, category});
   });
-  batch.commit();
+function seedDefaults(){
+  const batch = db.batch();
+
+  DEFAULT_ACCOUNTS.forEach(([name, category])=>{
+    const ref = userDoc().collection('accounts').doc();
+    batch.set(ref, {name, category});
+  });
+
+  batch.commit()
+    .then(()=>{
+      alert('標準科目を作成しました！');
+    })
+    .catch(e=>{
+      console.error(e);
+      alert('作成失敗：' + e.message);
+    });
+}
 }
 function seedDefaultsManual(){
   if(accounts.length>0){
