@@ -6,12 +6,9 @@
 <title>個人事業 会計帳簿(青色申告・複式簿記)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-
-<!-- Firebase SDK (compat版。type=moduleではないので特別な設定不要) -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-
 <style>
   :root{
     --navy:#1f3a5f; --navy-dark:#152943; --accent:#2f7a5f; --accent-light:#e6f2ed;
@@ -23,7 +20,6 @@
   input,select,textarea,button{font-family:inherit;font-size:14px;}
   .hidden{display:none !important;}
 
-  /* ログイン画面 */
   #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
   .login-box{background:var(--card);padding:36px 32px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);width:100%;max-width:380px;}
   .login-box h1{font-size:20px;color:var(--navy);margin:0 0 4px;}
@@ -35,7 +31,6 @@
   #loginError{color:var(--danger);font-size:13px;margin-top:12px;min-height:16px;}
   .link-btn{background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;font-size:12px;padding:0;}
 
-  /* ボタン共通 */
   button{cursor:pointer;border:none;border-radius:6px;padding:9px 16px;font-weight:500;}
   .btn-primary{background:var(--navy);color:#fff;}
   .btn-primary:hover{background:var(--navy-dark);}
@@ -44,11 +39,10 @@
   .btn-danger{background:#fff;color:var(--danger);border:1px solid var(--danger);}
   .btn-sm{padding:5px 10px;font-size:12px;}
 
-  /* アプリ本体 */
   #appScreen{display:none;min-height:100vh;flex-direction:column;}
-  header.topbar{background:var(--navy);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;}
+  header.topbar{background:var(--navy);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
   header.topbar h1{font-size:16px;margin:0;font-weight:700;}
-  header.topbar .user-info{display:flex;align-items:center;gap:14px;font-size:13px;}
+  header.topbar .user-info{display:flex;align-items:center;gap:14px;font-size:13px;flex-wrap:wrap;}
   nav.tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;}
   nav.tabs button{background:none;border:none;border-radius:0;padding:14px 18px;font-size:14px;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;}
   nav.tabs button.active{color:var(--navy);border-bottom-color:var(--accent);font-weight:700;}
@@ -81,6 +75,24 @@
   .pl-final td{background:var(--navy);color:#fff;font-weight:700;font-size:14px;}
   .empty-msg{color:var(--muted);font-size:13px;padding:20px;text-align:center;}
   .cat-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#eef1f5;color:var(--muted);}
+  .alert-box{padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px;}
+  .alert-ok{background:#eefaf3;color:var(--accent);border:1px solid #b8e0cd;}
+  .alert-err{background:#fdecea;color:var(--danger);border:1px solid #f5c6c0;}
+  .balance-check{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 12px;border-radius:20px;}
+  .balance-ok{background:#eefaf3;color:var(--accent);}
+  .balance-err{background:#fdecea;color:var(--danger);}
+  .sub-row{display:flex;gap:14px;margin-bottom:8px;align-items:flex-end;flex-wrap:wrap;}
+  .sub-row label{flex:1;min-width:120px;font-size:12px;color:var(--muted);}
+  .sub-row label input,.sub-row label select{width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;}
+  .sub-remove{background:#fff;border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:8px 10px;height:38px;}
+  .year-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--accent-light);color:var(--accent);font-weight:700;margin-left:6px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .modal{background:#fff;border-radius:10px;padding:24px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2);}
+  .modal h3{margin:0 0 16px;font-size:16px;color:var(--navy);}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+  .amount-match{font-size:12px;padding:4px 10px;border-radius:12px;margin-top:4px;display:inline-block;}
+  .match-ok{background:#eefaf3;color:var(--accent);}
+  .match-err{background:#fdecea;color:var(--danger);}
 </style>
 </head>
 <body>
@@ -121,6 +133,7 @@
     <button class="tab-btn" data-tab="tab-ledger" onclick="switchTab('tab-ledger')">総勘定元帳</button>
     <button class="tab-btn" data-tab="tab-trial" onclick="switchTab('tab-trial')">試算表</button>
     <button class="tab-btn" data-tab="tab-pl" onclick="switchTab('tab-pl')">損益計算書</button>
+    <button class="tab-btn" data-tab="tab-years" onclick="switchTab('tab-years')">会計年度</button>
     <button class="tab-btn" data-tab="tab-accounts" onclick="switchTab('tab-accounts')">科目設定</button>
   </nav>
 
@@ -129,29 +142,46 @@
     <!-- 仕訳入力タブ -->
     <div class="tab-panel active" id="tab-entry">
       <div class="card">
-        <h3>仕訳を1件ずつ入力</h3>
+        <h3 id="entryFormTitle">仕訳を入力</h3>
         <div class="form-row">
+          <label>会計年度
+            <select id="entryFiscalYear" onchange="onEntryYearChange()"></select>
+          </label>
           <label>日付<input type="date" id="entryDate"></label>
           <label>摘要<input type="text" id="entryDesc" placeholder="例)文房具購入"></label>
         </div>
-        <div class="form-row">
-          <label>借方科目<select id="debitAccount"></select></label>
-          <label>借方金額<input type="number" id="debitAmount" min="0"></label>
+
+        <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">借方(左側)</div>
+          <div id="debitLines"></div>
+          <button class="btn-outline btn-sm" onclick="addDebitLine()">+ 借方行を追加</button>
         </div>
-        <div class="form-row">
-          <label>貸方科目<select id="creditAccount"></select></label>
-          <label>貸方金額<input type="number" id="creditAmount" min="0"></label>
+
+        <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;">貸方(右側)</div>
+          <div id="creditLines"></div>
+          <button class="btn-outline btn-sm" onclick="addCreditLine()">+ 貸方行を追加</button>
         </div>
-        <button class="btn-primary" onclick="addEntry()">この仕訳を追加</button>
-        <p class="hint" style="margin-top:10px;">※通常、借方金額と貸方金額は同じ金額にしてください。</p>
+
+        <div id="amountMatchMsg" style="margin-bottom:12px;"></div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-primary" id="entrySubmitBtn" onclick="submitEntry()">仕訳を登録</button>
+          <button class="btn-outline hidden" id="entryCancelBtn" onclick="cancelEdit()">編集をキャンセル</button>
+        </div>
       </div>
 
       <div class="card">
         <h3>Excelから貼り付けて一括登録</h3>
         <p class="hint">
           Excel側で「日付 / 借方科目 / 借方金額 / 貸方科目 / 貸方金額 / 摘要」の順に列を並べ、見出し行を除いた範囲をコピーして
-          下の欄に貼り付けてください。日付は「2026/4/1」または「2026-04-01」の形式に対応しています。
+          下の欄に貼り付けてください。日付は「2026/4/1」または「2026-04-01」の形式に対応。科目は「科目名」で指定します。
         </p>
+        <div class="form-row">
+          <label>登録先の会計年度
+            <select id="importFiscalYear"></select>
+          </label>
+        </div>
         <textarea id="pasteArea" rows="6" placeholder="2026/4/1&#9;消耗品費&#9;1500&#9;現金&#9;1500&#9;文房具購入"></textarea>
         <div style="margin-top:10px;">
           <button class="btn-outline" onclick="previewPaste()">内容を確認する</button>
@@ -167,7 +197,7 @@
           <button class="btn-outline btn-sm" onclick="buildExportText()">テキストを生成</button>
           <button class="btn-accent btn-sm" onclick="downloadCSV()">CSVダウンロード</button>
         </div>
-        <textarea id="exportArea" rows="6" placeholder="「テキストを生成」を押すとここに表示されます。全選択してExcelに貼り付けできます。"></textarea>
+        <textarea id="exportArea" rows="6" placeholder="「テキストを生成」を押すとここに表示されます。"></textarea>
       </div>
     </div>
 
@@ -176,7 +206,7 @@
       <div class="card">
         <div class="toolbar">
           <h3 style="margin:0;flex:1;">仕訳帳</h3>
-          <label>年度:</label>
+          <label>会計年度:</label>
           <select id="journalYearSelect" onchange="renderJournal()"></select>
         </div>
         <div class="table-wrap"><table id="journalTable"></table></div>
@@ -190,7 +220,7 @@
           <h3 style="margin:0;flex:1;">総勘定元帳</h3>
           <label>科目:</label>
           <select id="ledgerAccountSelect" onchange="renderLedger()"></select>
-          <label>年度:</label>
+          <label>会計年度:</label>
           <select id="ledgerYearSelect" onchange="renderLedger()"></select>
         </div>
         <div class="table-wrap"><table id="ledgerTable"></table></div>
@@ -202,9 +232,10 @@
       <div class="card">
         <div class="toolbar">
           <h3 style="margin:0;flex:1;">合計残高試算表</h3>
-          <label>年度:</label>
+          <label>会計年度:</label>
           <select id="trialYearSelect" onchange="renderTrialBalance()"></select>
         </div>
+        <div id="trialBalanceCheck"></div>
         <div class="table-wrap"><table id="trialTable"></table></div>
       </div>
     </div>
@@ -214,10 +245,29 @@
       <div class="card">
         <div class="toolbar">
           <h3 style="margin:0;flex:1;">損益計算書</h3>
-          <label>年度:</label>
+          <label>会計年度:</label>
           <select id="plYearSelect" onchange="renderPL()"></select>
         </div>
         <div class="table-wrap"><table id="plTable"></table></div>
+      </div>
+    </div>
+
+    <!-- 会計年度タブ -->
+    <div class="tab-panel" id="tab-years">
+      <div class="card">
+        <h3>会計年度一覧</h3>
+        <p class="hint">会計年度ごとに開始日・終了日を登録します。仕訳は必ずいずれかの会計年度に属します。</p>
+        <div class="table-wrap"><table id="yearsTable"></table></div>
+      </div>
+      <div class="card">
+        <h3>会計年度を追加</h3>
+        <div class="form-row">
+          <label>年度名(例:2026)<input type="text" id="newYearName" placeholder="2026"></label>
+          <label>開始日<input type="date" id="newYearStart"></label>
+          <label>終了日<input type="date" id="newYearEnd"></label>
+        </div>
+        <button class="btn-primary" onclick="addFiscalYear()">会計年度を追加</button>
+        <p class="hint" style="margin-top:10px;">※年度名は重複登録できません。</p>
       </div>
     </div>
 
@@ -225,7 +275,7 @@
     <div class="tab-panel" id="tab-accounts">
       <div class="card">
         <h3>勘定科目一覧</h3>
-        <p class="hint">科目名・区分は直接編集できます(変更後、自動保存されます)。過去の仕訳の科目名は変更されません。</p>
+        <p class="hint">科目名・区分は直接編集できます(変更後、自動保存されます)。仕訳は科目IDで紐付いているため、名称変更しても仕訳は壊れません。使用中の科目は削除できません。</p>
         <div class="table-wrap"><table id="accountsTable"></table></div>
       </div>
       <div class="card">
@@ -243,11 +293,7 @@
           </label>
         </div>
         <button class="btn-primary" onclick="addAccount()">科目を追加</button>
-      </div>
-      <div class="card">
-        <h3>初期科目セット</h3>
-        <p class="hint">科目が1件も登録されていない場合、青色申告決算書に準拠した標準科目(約39件)を一括で作成できます。</p>
-        <button class="btn-outline" onclick="seedDefaultsManual()">標準科目を作成する</button>
+        <p class="hint" style="margin-top:10px;">※同名の科目は登録できません。</p>
       </div>
     </div>
 
@@ -256,7 +302,7 @@
 
 <script>
 /* =========================================================
-   ★★★ ここにFirebaseコンソールでコピーした設定を貼り付けてください ★★★
+   ★★★ Firebaseコンソールでコピーした設定 ★★★
    ========================================================= */
 const firebaseConfig = {
   apiKey: "AIzaSyDTwtGtdViDlWVy5xRBlc5tYTFA2xRF3Gk",
@@ -288,10 +334,12 @@ const DEFAULT_ACCOUNTS = [
 ];
 
 let currentUser = null;
-let accounts = [];   // {id,name,category}
-let entries = [];    // {id,date,debitAccount,debitAmount,creditAccount,creditAmount,description}
-let unsubAccounts = null, unsubEntries = null;
+let accounts = [];      // {id,name,category}
+let entries = [];       // {id,date,fiscalYearId,debitLines:[{accountId,amount}],creditLines:[{accountId,amount}],description}
+let fiscalYears = [];   // {id,name,startDate,endDate}
+let unsubAccounts=null, unsubEntries=null, unsubYears=null;
 let pendingImportRows = [];
+let editingEntryId = null;
 
 /* ---------------- 認証 ---------------- */
 function doLogin(){
@@ -346,7 +394,8 @@ auth.onAuthStateChanged(user=>{
     currentUser = null;
     if(unsubAccounts) unsubAccounts();
     if(unsubEntries) unsubEntries();
-    accounts = []; entries = [];
+    if(unsubYears) unsubYears();
+    accounts = []; entries = []; fiscalYears = [];
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('appScreen').style.display = 'none';
   }
@@ -356,8 +405,21 @@ auth.onAuthStateChanged(user=>{
 function userDoc(){ return db.collection('users').doc(currentUser.uid); }
 
 function startListeners(){
+  // 初期科目セット(重複防止付き)
   userDoc().collection('accounts').get().then(snap=>{
-    if(snap.empty){ seedDefaults(); }
+    if(snap.empty){
+      const batch = db.batch();
+      DEFAULT_ACCOUNTS.forEach(([name,category])=>{
+        const ref = userDoc().collection('accounts').doc();
+        batch.set(ref, {name, category});
+      });
+      batch.commit().then(()=>{
+        alert('標準科目を作成しました！');
+      }).catch(e=>{
+        console.error(e);
+        alert('標準科目の作成に失敗: ' + e.message);
+      });
+    }
   });
 
   unsubAccounts = userDoc().collection('accounts').orderBy('category').orderBy('name')
@@ -365,9 +427,21 @@ function startListeners(){
       accounts = snap.docs.map(d=>({id:d.id, ...d.data()}));
       renderAccountSelects();
       renderAccountsTable();
+      renderAllDebitCreditLines();
       renderTrialBalance();
       renderPL();
       renderLedger();
+    });
+
+  unsubYears = userDoc().collection('fiscalYears').orderBy('name')
+    .onSnapshot(snap=>{
+      fiscalYears = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      populateYearSelects();
+      renderYearsTable();
+      renderJournal();
+      renderLedger();
+      renderTrialBalance();
+      renderPL();
     });
 
   unsubEntries = userDoc().collection('entries').orderBy('date')
@@ -381,57 +455,76 @@ function startListeners(){
     });
 }
 
-function seedDefaults(){
-  const batch = db.batch();
-  DEFAULT_ACCOUNTS.forEach(([name,category])=>{
-    const ref = userDoc().collection('accounts').doc();
-    batch.set(ref, {name, category});
-  });
-function seedDefaults(){
-  const batch = db.batch();
-
-  DEFAULT_ACCOUNTS.forEach(([name, category])=>{
-    const ref = userDoc().collection('accounts').doc();
-    batch.set(ref, {name, category});
-  });
-
-  batch.commit()
-    .then(()=>{
-      alert('標準科目を作成しました！');
-    })
-    .catch(e=>{
-      console.error(e);
-      alert('作成失敗：' + e.message);
-    });
-}
-}
-function seedDefaultsManual(){
-  if(accounts.length>0){
-    if(!confirm("既に科目が登録されています。標準科目を追加で作成しますか?(重複する可能性があります)")) return;
+/* ---------------- 会計年度 ---------------- */
+function renderYearsTable(){
+  const sorted = [...fiscalYears].sort((a,b)=> a.startDate.localeCompare(b.startDate));
+  let html = '<tr><th class="left">年度名</th><th class="left">開始日</th><th class="left">終了日</th><th>仕訳件数</th><th>操作</th></tr>';
+  if(sorted.length===0){
+    html += '<tr><td colspan="5" class="empty-msg">会計年度が登録されていません</td></tr>';
   }
-  seedDefaults();
+  sorted.forEach(y=>{
+    const count = entries.filter(e=>e.fiscalYearId===y.id).length;
+    html += `<tr>
+      <td class="left"><input type="text" value="${escapeHtml(y.name)}" onchange="updateFiscalYear('${y.id}','name',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:4px;"></td>
+      <td class="left"><input type="date" value="${y.startDate||''}" onchange="updateFiscalYear('${y.id}','startDate',this.value)" style="padding:5px;border:1px solid var(--border);border-radius:4px;"></td>
+      <td class="left"><input type="date" value="${y.endDate||''}" onchange="updateFiscalYear('${y.id}','endDate',this.value)" style="padding:5px;border:1px solid var(--border);border-radius:4px;"></td>
+      <td>${count}件</td>
+      <td><button class="btn-danger btn-sm" onclick="deleteFiscalYear('${y.id}','${escapeHtml(y.name)}')">削除</button></td>
+    </tr>`;
+  });
+  document.getElementById('yearsTable').innerHTML = html;
+}
+function addFiscalYear(){
+  const name = document.getElementById('newYearName').value.trim();
+  const startDate = document.getElementById('newYearStart').value;
+  const endDate = document.getElementById('newYearEnd').value;
+  if(!name || !startDate || !endDate){ alert('年度名・開始日・終了日は必須です'); return; }
+  if(fiscalYears.some(y=>y.name===name)){ alert('同じ年度名が既に存在します'); return; }
+  userDoc().collection('fiscalYears').add({name, startDate, endDate}).then(()=>{
+    document.getElementById('newYearName').value = '';
+    document.getElementById('newYearStart').value = '';
+    document.getElementById('newYearEnd').value = '';
+  });
+}
+function updateFiscalYear(id, field, value){
+  if(field==='name'){
+    const other = fiscalYears.find(y=>y.id!==id && y.name===value);
+    if(other){ alert('同じ年度名が既に存在します'); renderYearsTable(); return; }
+  }
+  userDoc().collection('fiscalYears').doc(id).update({[field]: value});
+}
+function deleteFiscalYear(id, name){
+  const count = entries.filter(e=>e.fiscalYearId===id).length;
+  if(count>0){
+    alert(`「${name}」には${count}件の仕訳が存在するため削除できません。先に仕訳を移動または削除してください。`);
+    return;
+  }
+  if(!confirm(`会計年度「${name}」を削除しますか?`)) return;
+  userDoc().collection('fiscalYears').doc(id).delete();
 }
 
 /* ---------------- 科目設定 ---------------- */
 function renderAccountSelects(){
   const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
-  const opts = sorted.map(a=>`<option value="${escapeHtml(a.name)}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
-  ['debitAccount','creditAccount'].forEach(id=>{
-    const el = document.getElementById(id);
-    const prev = el.value;
-    el.innerHTML = opts;
-    if([...el.options].some(o=>o.value===prev)) el.value = prev;
+  const opts = sorted.map(a=>`<option value="${a.id}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
+  document.querySelectorAll('.account-select').forEach(sel=>{
+    const prev = sel.value;
+    sel.innerHTML = opts;
+    if([...sel.options].some(o=>o.value===prev)) sel.value = prev;
   });
   const ledgerSel = document.getElementById('ledgerAccountSelect');
-  const prevLedger = ledgerSel.value;
-  ledgerSel.innerHTML = opts;
-  if([...ledgerSel.options].some(o=>o.value===prevLedger)) ledgerSel.value = prevLedger;
+  if(ledgerSel){
+    const prevLedger = ledgerSel.value;
+    ledgerSel.innerHTML = sorted.map(a=>`<option value="${a.id}">[${categoryLabels[a.category]}] ${escapeHtml(a.name)}</option>`).join('');
+    if([...ledgerSel.options].some(o=>o.value===prevLedger)) ledgerSel.value = prevLedger;
+  }
 }
 
 function renderAccountsTable(){
   const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
-  let html = '<tr><th class="left">科目名</th><th class="left">区分</th><th>操作</th></tr>';
+  let html = '<tr><th class="left">科目名</th><th class="left">区分</th><th>使用状況</th><th>操作</th></tr>';
   sorted.forEach(a=>{
+    const used = isAccountUsed(a.id);
     html += `<tr>
       <td class="left"><input type="text" value="${escapeHtml(a.name)}" onchange="updateAccount('${a.id}','name',this.value)" style="width:100%;padding:5px;border:1px solid var(--border);border-radius:4px;"></td>
       <td class="left">
@@ -439,321 +532,18 @@ function renderAccountsTable(){
           ${categoryOrder.map(c=>`<option value="${c}" ${c===a.category?'selected':''}>${categoryLabels[c]}</option>`).join('')}
         </select>
       </td>
-      <td><button class="btn-danger btn-sm" onclick="deleteAccount('${a.id}','${escapeHtml(a.name)}')">削除</button></td>
+      <td>${used ? '<span class="cat-badge">使用中</span>' : '<span class="cat-badge">未使用</span>'}</td>
+      <td>${used ? '<span class="hint">削除不可</span>' : `<button class="btn-danger btn-sm" onclick="deleteAccount('${a.id}','${escapeHtml(a.name)}')">削除</button>`}</td>
     </tr>`;
   });
-  document.getElementById('accountsTable').innerHTML = html || '<tr><td class="empty-msg">科目がありません</td></tr>';
+  document.getElementById('accountsTable').innerHTML = html;
+}
+
+function isAccountUsed(accountId){
+  return entries.some(e=>
+    (e.debitLines||[]).some(l=>l.accountId===accountId) ||
+    (e.creditLines||[]).some(l=>l.accountId===accountId)
+  );
 }
 
 function addAccount(){
-  const name = document.getElementById('newAccountName').value.trim();
-  const category = document.getElementById('newAccountCategory').value;
-  if(!name){ alert('科目名を入力してください'); return; }
-  userDoc().collection('accounts').add({name, category}).then(()=>{
-    document.getElementById('newAccountName').value = '';
-  });
-}
-function updateAccount(id, field, value){
-  userDoc().collection('accounts').doc(id).update({[field]: value});
-}
-function deleteAccount(id, name){
-  const used = entries.some(e=>e.debitAccount===name || e.creditAccount===name);
-  if(used){
-    if(!confirm(`「${name}」は既存の仕訳で使用されています。削除すると過去の仕訳の科目名表示が残ったままになりますが、削除しますか?`)) return;
-  } else {
-    if(!confirm(`科目「${name}」を削除しますか?`)) return;
-  }
-  userDoc().collection('accounts').doc(id).delete();
-}
-
-/* ---------------- 仕訳入力 ---------------- */
-function addEntry(){
-  const date = document.getElementById('entryDate').value;
-  const desc = document.getElementById('entryDesc').value.trim();
-  const debitAccount = document.getElementById('debitAccount').value;
-  const debitAmount = Number(document.getElementById('debitAmount').value);
-  const creditAccount = document.getElementById('creditAccount').value;
-  const creditAmount = Number(document.getElementById('creditAmount').value);
-
-  if(!date || !debitAccount || !creditAccount || !debitAmount || !creditAmount){
-    alert('日付・借方科目・借方金額・貸方科目・貸方金額は必須です'); return;
-  }
-  userDoc().collection('entries').add({date, description:desc, debitAccount, debitAmount, creditAccount, creditAmount}).then(()=>{
-    document.getElementById('entryDesc').value = '';
-    document.getElementById('debitAmount').value = '';
-    document.getElementById('creditAmount').value = '';
-  });
-}
-function deleteEntry(id){
-  if(confirm('この仕訳を削除しますか?')) userDoc().collection('entries').doc(id).delete();
-}
-
-/* ---------------- Excel貼り付け取り込み ---------------- */
-function parseDateFlexible(str){
-  str = (str||'').trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  let m = str.match(/^(\d{4})[\/年](\d{1,2})[\/月](\d{1,2})日?$/);
-  if(m){ return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`; }
-  const d = new Date(str);
-  if(!isNaN(d.getTime())){
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  }
-  return null;
-}
-
-function previewPaste(){
-  const raw = document.getElementById('pasteArea').value;
-  const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
-  const accountNames = new Set(accounts.map(a=>a.name));
-  pendingImportRows = [];
-  let html = '<div class="table-wrap"><table><tr><th class="left">日付</th><th class="left">借方科目</th><th>借方金額</th><th class="left">貸方科目</th><th>貸方金額</th><th class="left">摘要</th><th>状態</th></tr>';
-
-  lines.forEach(line=>{
-    const cols = line.includes('\t') ? line.split('\t') : line.split(',');
-    const [dateRaw, debitAcc, debitAmt, creditAcc, creditAmt, desc] = cols.map(c=>(c||'').trim());
-    const date = parseDateFlexible(dateRaw);
-    const errors = [];
-    if(!date) errors.push('日付不正');
-    if(!accountNames.has(debitAcc)) errors.push('借方科目未登録');
-    if(!accountNames.has(creditAcc)) errors.push('貸方科目未登録');
-    if(!debitAmt || isNaN(Number(debitAmt))) errors.push('借方金額不正');
-    if(!creditAmt || isNaN(Number(creditAmt))) errors.push('貸方金額不正');
-
-    const ok = errors.length===0;
-    if(ok){
-      pendingImportRows.push({date, debitAccount:debitAcc, debitAmount:Number(debitAmt), creditAccount:creditAcc, creditAmount:Number(creditAmt), description:desc||''});
-    }
-    html += `<tr class="${ok?'row-ok':'row-error'}">
-      <td class="left">${escapeHtml(dateRaw)}</td>
-      <td class="left">${escapeHtml(debitAcc)}</td>
-      <td>${escapeHtml(debitAmt)}</td>
-      <td class="left">${escapeHtml(creditAcc)}</td>
-      <td>${escapeHtml(creditAmt)}</td>
-      <td class="left">${escapeHtml(desc||'')}</td>
-      <td class="${ok?'status-ok':'status-err'}">${ok?'OK':errors.join('・')}</td>
-    </tr>`;
-  });
-  html += '</table></div>';
-
-  if(lines.length===0){
-    html = '<p class="empty-msg">貼り付け欄が空です</p>';
-  } else {
-    html += `<div style="margin-top:12px;">
-      <button class="btn-primary" onclick="confirmPasteImport()">OKの行(${pendingImportRows.length}件)を登録する</button>
-    </div>`;
-  }
-  document.getElementById('pastePreviewArea').innerHTML = html;
-}
-
-function confirmPasteImport(){
-  if(pendingImportRows.length===0){ alert('登録できる行がありません'); return; }
-  const batch = db.batch();
-  pendingImportRows.forEach(row=>{
-    const ref = userDoc().collection('entries').doc();
-    batch.set(ref, row);
-  });
-  batch.commit().then(()=>{
-    alert(`${pendingImportRows.length}件の仕訳を登録しました`);
-    document.getElementById('pasteArea').value = '';
-    document.getElementById('pastePreviewArea').innerHTML = '';
-    pendingImportRows = [];
-  });
-}
-
-/* ---------------- Excel出力 ---------------- */
-function buildExportText(){
-  const year = document.getElementById('exportYearSelect').value;
-  const rows = entries.filter(e=> year==='all' || e.date.slice(0,4)===year);
-  let text = '';
-  rows.forEach(e=>{
-    text += `${e.date}\t${e.debitAccount}\t${e.debitAmount}\t${e.creditAccount}\t${e.creditAmount}\t${e.description||''}\n`;
-  });
-  document.getElementById('exportArea').value = text;
-}
-function downloadCSV(){
-  buildExportText();
-  const text = document.getElementById('exportArea').value;
-  const header = "日付,借方科目,借方金額,貸方科目,貸方金額,摘要\n";
-  const csvBody = text.split('\n').filter(l=>l.length>0).map(line=>{
-    return line.split('\t').map(v=>`"${v.replace(/"/g,'""')}"`).join(',');
-  }).join('\n');
-  const blob = new Blob(["\uFEFF"+header+csvBody], {type:'text/csv;charset=utf-8;'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '仕訳データ.csv';
-  a.click();
-}
-
-/* ---------------- 年度セレクト共通 ---------------- */
-function populateYearSelects(){
-  const years = Array.from(new Set(entries.map(e=>e.date.slice(0,4)))).sort();
-  const thisYear = String(new Date().getFullYear());
-  if(!years.includes(thisYear)) years.push(thisYear);
-  years.sort();
-
-  const withAll = ['all', ...years];
-  [
-    {id:'journalYearSelect', includeAll:true},
-    {id:'ledgerYearSelect', includeAll:true},
-    {id:'trialYearSelect', includeAll:true},
-    {id:'plYearSelect', includeAll:false},
-    {id:'exportYearSelect', includeAll:true}
-  ].forEach(cfg=>{
-    const el = document.getElementById(cfg.id);
-    const prev = el.value;
-    const list = cfg.includeAll ? withAll : years;
-    el.innerHTML = list.map(y=> y==='all' ? '<option value="all">全期間</option>' : `<option value="${y}">${y}年</option>`).join('');
-    if(list.includes(prev)) el.value = prev; else el.value = cfg.includeAll ? 'all' : years[years.length-1];
-  });
-}
-
-/* ---------------- 仕訳帳 ---------------- */
-function renderJournal(){
-  const yearSel = document.getElementById('journalYearSelect');
-  if(!yearSel) return;
-  const year = yearSel.value || 'all';
-  const rows = entries.filter(e=> year==='all' || e.date.slice(0,4)===year).sort((a,b)=>a.date.localeCompare(b.date));
-  let html = '<tr><th class="left">日付</th><th class="left">摘要</th><th class="left">借方科目</th><th>借方金額</th><th class="left">貸方科目</th><th>貸方金額</th><th></th></tr>';
-  if(rows.length===0){
-    html += '<tr><td colspan="7" class="empty-msg">該当する仕訳がありません</td></tr>';
-  }
-  rows.forEach(e=>{
-    html += `<tr>
-      <td class="left">${e.date}</td>
-      <td class="left">${escapeHtml(e.description||'')}</td>
-      <td class="left">${escapeHtml(e.debitAccount)}</td>
-      <td>${fmt(e.debitAmount)}</td>
-      <td class="left">${escapeHtml(e.creditAccount)}</td>
-      <td>${fmt(e.creditAmount)}</td>
-      <td><button class="btn-danger btn-sm" onclick="deleteEntry('${e.id}')">削除</button></td>
-    </tr>`;
-  });
-  document.getElementById('journalTable').innerHTML = html;
-}
-
-/* ---------------- 総勘定元帳 ---------------- */
-function renderLedger(){
-  const accSel = document.getElementById('ledgerAccountSelect');
-  const yearSel = document.getElementById('ledgerYearSelect');
-  if(!accSel || !yearSel) return;
-  const accName = accSel.value;
-  const year = yearSel.value || 'all';
-  if(!accName){ document.getElementById('ledgerTable').innerHTML = '<tr><td class="empty-msg">科目を選択してください</td></tr>'; return; }
-  const acc = accounts.find(a=>a.name===accName);
-  const isDebitNormal = acc && (acc.category==='asset' || acc.category==='expense');
-
-  const rows = entries.filter(e=> (e.debitAccount===accName || e.creditAccount===accName) && (year==='all' || e.date.slice(0,4)===year))
-    .sort((a,b)=>a.date.localeCompare(b.date));
-
-  let balance = 0;
-  let html = '<tr><th class="left">日付</th><th class="left">摘要</th><th class="left">相手科目</th><th>借方</th><th>貸方</th><th>残高</th></tr>';
-  if(rows.length===0){
-    html += '<tr><td colspan="6" class="empty-msg">該当する記帳がありません</td></tr>';
-  }
-  rows.forEach(e=>{
-    const isDebitSide = e.debitAccount===accName;
-    const debitVal = isDebitSide ? e.debitAmount : 0;
-    const creditVal = !isDebitSide ? e.creditAmount : 0;
-    balance += isDebitNormal ? (debitVal - creditVal) : (creditVal - debitVal);
-    const counter = isDebitSide ? e.creditAccount : e.debitAccount;
-    html += `<tr>
-      <td class="left">${e.date}</td>
-      <td class="left">${escapeHtml(e.description||'')}</td>
-      <td class="left">${escapeHtml(counter)}</td>
-      <td>${debitVal?fmt(debitVal):''}</td>
-      <td>${creditVal?fmt(creditVal):''}</td>
-      <td>${fmt(balance)}</td>
-    </tr>`;
-  });
-  document.getElementById('ledgerTable').innerHTML = html;
-}
-
-/* ---------------- 試算表 ---------------- */
-function renderTrialBalance(){
-  const yearSel = document.getElementById('trialYearSelect');
-  if(!yearSel) return;
-  const year = yearSel.value || 'all';
-  const filtered = entries.filter(e=> year==='all' || e.date.slice(0,4)===year);
-
-  const sorted = [...accounts].sort((a,b)=> categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category) || a.name.localeCompare(b.name,'ja'));
-  let html = '<tr><th class="left">科目</th><th class="left">区分</th><th>借方合計</th><th>貸方合計</th><th>借方残高</th><th>貸方残高</th></tr>';
-  let sumDebitTotal=0, sumCreditTotal=0, sumDebitBal=0, sumCreditBal=0;
-
-  sorted.forEach(a=>{
-    const debitTotal = filtered.filter(e=>e.debitAccount===a.name).reduce((s,e)=>s+e.debitAmount,0);
-    const creditTotal = filtered.filter(e=>e.creditAccount===a.name).reduce((s,e)=>s+e.creditAmount,0);
-    if(debitTotal===0 && creditTotal===0) return;
-    const isDebitNormal = a.category==='asset' || a.category==='expense';
-    const net = debitTotal - creditTotal;
-    const debitBal = isDebitNormal ? Math.max(net,0) : Math.max(-net,0);
-    const creditBal = isDebitNormal ? Math.max(-net,0) : Math.max(net,0);
-    sumDebitTotal+=debitTotal; sumCreditTotal+=creditTotal; sumDebitBal+=debitBal; sumCreditBal+=creditBal;
-    html += `<tr>
-      <td class="left">${escapeHtml(a.name)}</td>
-      <td class="left"><span class="cat-badge">${categoryLabels[a.category]}</span></td>
-      <td>${debitTotal?fmt(debitTotal):''}</td>
-      <td>${creditTotal?fmt(creditTotal):''}</td>
-      <td>${debitBal?fmt(debitBal):''}</td>
-      <td>${creditBal?fmt(creditBal):''}</td>
-    </tr>`;
-  });
-  html += `<tr class="total-row"><td class="left" colspan="2">合計</td><td>${fmt(sumDebitTotal)}</td><td>${fmt(sumCreditTotal)}</td><td>${fmt(sumDebitBal)}</td><td>${fmt(sumCreditBal)}</td></tr>`;
-  document.getElementById('trialTable').innerHTML = html;
-}
-
-/* ---------------- 損益計算書 ---------------- */
-function renderPL(){
-  const yearSel = document.getElementById('plYearSelect');
-  if(!yearSel) return;
-  const year = yearSel.value;
-  if(!year){ document.getElementById('plTable').innerHTML = '<tr><td class="empty-msg">年度を選択してください</td></tr>'; return; }
-  const filtered = entries.filter(e=> e.date.slice(0,4)===year);
-
-  const revenueAccs = accounts.filter(a=>a.category==='revenue').sort((a,b)=>a.name.localeCompare(b.name,'ja'));
-  const expenseAccs = accounts.filter(a=>a.category==='expense').sort((a,b)=>a.name.localeCompare(b.name,'ja'));
-
-  let html = '<tr><th class="left">科目</th><th>金額</th></tr>';
-  let revenueTotal = 0;
-  html += '<tr class="pl-section-header"><td colspan="2" class="left">収益の部</td></tr>';
-  revenueAccs.forEach(a=>{
-    const credit = filtered.filter(e=>e.creditAccount===a.name).reduce((s,e)=>s+e.creditAmount,0);
-    const debit = filtered.filter(e=>e.debitAccount===a.name).reduce((s,e)=>s+e.debitAmount,0);
-    const val = credit - debit;
-    if(val===0) return;
-    revenueTotal += val;
-    html += `<tr><td class="left">${escapeHtml(a.name)}</td><td>${fmt(val)}</td></tr>`;
-  });
-  html += `<tr class="total-row"><td class="left">収益合計</td><td>${fmt(revenueTotal)}</td></tr>`;
-
-  let expenseTotal = 0;
-  html += '<tr class="pl-section-header"><td colspan="2" class="left">費用の部</td></tr>';
-  expenseAccs.forEach(a=>{
-    const debit = filtered.filter(e=>e.debitAccount===a.name).reduce((s,e)=>s+e.debitAmount,0);
-    const credit = filtered.filter(e=>e.creditAccount===a.name).reduce((s,e)=>s+e.creditAmount,0);
-    const val = debit - credit;
-    if(val===0) return;
-    expenseTotal += val;
-    html += `<tr><td class="left">${escapeHtml(a.name)}</td><td>${fmt(val)}</td></tr>`;
-  });
-  html += `<tr class="total-row"><td class="left">費用合計</td><td>${fmt(expenseTotal)}</td></tr>`;
-  html += `<tr class="pl-final"><td class="left">当期純利益(収益-費用)</td><td>${fmt(revenueTotal-expenseTotal)}</td></tr>`;
-
-  document.getElementById('plTable').innerHTML = html;
-}
-
-/* ---------------- タブ切り替え ---------------- */
-function switchTab(tabId){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
-}
-
-/* ---------------- ユーティリティ ---------------- */
-function fmt(n){ return Number(n||0).toLocaleString('ja-JP'); }
-function escapeHtml(s){
-  return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-</script>
-</body>
-</html>
